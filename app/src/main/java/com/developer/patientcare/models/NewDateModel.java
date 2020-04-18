@@ -2,13 +2,12 @@ package com.developer.patientcare.models;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 import androidx.databinding.ObservableField;
+import androidx.databinding.library.baseAdapters.BR;
 
-import com.developer.patientcare.BR;
 import com.developer.patientcare.R;
 
 import java.io.Serializable;
@@ -18,7 +17,7 @@ public class NewDateModel extends BaseObservable implements Serializable {
     private String drugName;
     private String time;
     private String details;
-
+    private long time_stamp;
 
     public ObservableField<String> error_drug_name = new ObservableField<>();
     public ObservableField<String> error_time = new ObservableField<>();
@@ -29,7 +28,7 @@ public class NewDateModel extends BaseObservable implements Serializable {
         this.drugName = "";
         this.time = "";
         this.details = "";
-
+        setTime_stamp(0);
         setDrugName(drugName);
         setTime(time);
         setDetails(details);
@@ -110,4 +109,11 @@ public class NewDateModel extends BaseObservable implements Serializable {
     }
 
 
+    public long getTime_stamp() {
+        return time_stamp;
+    }
+
+    public void setTime_stamp(long time_stamp) {
+        this.time_stamp = time_stamp;
+    }
 }

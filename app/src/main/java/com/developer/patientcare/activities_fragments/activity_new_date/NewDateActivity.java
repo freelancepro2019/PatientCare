@@ -4,18 +4,23 @@ package com.developer.patientcare.activities_fragments.activity_new_date;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
+
 import com.developer.patientcare.R;
 import com.developer.patientcare.databinding.ActivityNewDateBinding;
 import com.developer.patientcare.databinding.DialogAlertBinding;
 import com.developer.patientcare.interfaces.Listeners;
 import com.developer.patientcare.language.LanguageHelper;
+import com.developer.patientcare.local_database.Alarm;
+import com.developer.patientcare.local_database.AlertTable;
+import com.developer.patientcare.local_database.DataBaseListeners;
+import com.developer.patientcare.local_database.ManageDataBase;
 import com.developer.patientcare.models.DatesModel;
 import com.developer.patientcare.models.NewDateModel;
 import com.developer.patientcare.models.UserModel;
@@ -25,14 +30,16 @@ import com.developer.patientcare.tags.Tags;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import io.paperdb.Paper;
 
-public class NewDateActivity extends AppCompatActivity implements Listeners.BackListener, Listeners.NewDateListener, TimePickerDialog.OnTimeSetListener {
+public class NewDateActivity extends AppCompatActivity implements Listeners.BackListener, Listeners.NewDateListener, TimePickerDialog.OnTimeSetListener , DataBaseListeners {
     private ActivityNewDateBinding binding;
     private String lang;
     private TimePickerDialog timePickerDialog;
@@ -40,6 +47,8 @@ public class NewDateActivity extends AppCompatActivity implements Listeners.Back
     private Preferences preferences;
     private UserModel userModel;
     private DatabaseReference dRef;
+    private ManageDataBase manageDataBase;
+    private Alarm alarm;
 
 
     @Override
@@ -57,6 +66,8 @@ public class NewDateActivity extends AppCompatActivity implements Listeners.Back
     }
 
     private void initView() {
+        alarm = new Alarm(this);
+        manageDataBase = new ManageDataBase(this,this);
         dRef = FirebaseDatabase.getInstance().getReference(Tags.DATABASE_NAME).child(Tags.TABLE_Dates);
         preferences = Preferences.newInstance();
         userModel = preferences.getUserData(this);
@@ -86,6 +97,7 @@ public class NewDateActivity extends AppCompatActivity implements Listeners.Back
     }
     private void createTimePickerDialog() {
         Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE,1);
         timePickerDialog = TimePickerDialog.newInstance(this, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false);
         timePickerDialog.dismissOnPause(true);
         timePickerDialog.setAccentColor(ActivityCompat.getColor(this, R.color.colorPrimary));
@@ -106,13 +118,15 @@ public class NewDateActivity extends AppCompatActivity implements Listeners.Back
         dialog.show();
         String id = dRef.child(userModel.getId()).push().getKey();
         String create_at = new SimpleDateFormat("dd/MMM/yyyy hh:mm aa",Locale.ENGLISH).format(new Date(Calendar.getInstance().getTimeInMillis()));
-        DatesModel datesModel = new DatesModel(id,model.getDrugName(), model.getTime(), model.getDetails(),create_at);
+        DatesModel datesModel = new DatesModel(id,model.getDrugName(), model.getTime(), model.getDetails(),create_at,model.getTime_stamp());
         dRef.child(userModel.getId()).child(id)
                 .setValue(datesModel)
                 .addOnCompleteListener(task -> {
                     dialog.dismiss();
                     if (task.isSuccessful()) {
-                        createDialogAlert();
+                        AlertTable alertTable = new AlertTable(id,model.getDrugName(),model.getDetails(),model.getTime(),create_at,model.getTime_stamp());
+                        manageDataBase.insert(alertTable);
+                        alarm.startAlarm(alertTable);
                     }
                 }).addOnFailureListener(e -> {
             dialog.dismiss();
@@ -161,6 +175,22 @@ public class NewDateActivity extends AppCompatActivity implements Listeners.Back
         binding.tvTime.setText(t);
 
         newDateModel.setTime(t);
+
+
+        Calendar calendarToday = Calendar.getInstance();
+
+
+        Calendar calendar2 = Calendar.getInstance();
+        calendar2.setTimeInMillis(System.currentTimeMillis());
+        calendar2.clear();
+        calendar2.set(Calendar.DAY_OF_MONTH,calendarToday.get(Calendar.DAY_OF_MONTH));
+        calendar2.set(Calendar.MONTH,calendarToday.get(Calendar.MONTH));
+        calendar2.set(Calendar.YEAR,calendarToday.get(Calendar.YEAR));
+
+        calendar2.set(Calendar.HOUR_OF_DAY,hourOfDay);
+        calendar2.set(Calendar.MINUTE,minute);
+        calendar2.set(Calendar.SECOND,second);
+        newDateModel.setTime_stamp(calendar2.getTimeInMillis());
         binding.setModel(newDateModel);
     }
 
@@ -181,5 +211,31 @@ public class NewDateActivity extends AppCompatActivity implements Listeners.Back
                 Common.CreateDialogAlert(this, getString(R.string.please_sign_in_or_sign_up));
             }
         }
+    }
+
+    @Override
+    public void onUpdateSuccess() {
+
+    }
+
+    @Override
+    public void onDeleteSuccess() {
+
+    }
+
+    @Override
+    public void onInsertSuccess() {
+        createDialogAlert();
+
+    }
+
+    @Override
+    public void display(List<AlertTable> list) {
+
+    }
+
+    @Override
+    public void onSingleAlertSuccess(AlertTable alertTable) {
+
     }
 }

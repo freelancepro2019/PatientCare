@@ -1,22 +1,14 @@
 package com.developer.patientcare.activities_fragments.activity_my_dates;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.PorterDuff;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.developer.patientcare.R;
@@ -34,9 +26,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -63,7 +53,6 @@ public class DatesActivity extends AppCompatActivity implements Listeners.BackLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_dates);
-        addNotification();
         initView();
     }
 
@@ -81,15 +70,8 @@ public class DatesActivity extends AppCompatActivity implements Listeners.BackLi
         binding.recView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new DatesAdapter(datesModelList, this);
         binding.recView.setAdapter(adapter);
-
         getData();
 
-        String currentTime = new SimpleDateFormat("HH:mm").format(new Date());
-        String timeToCompare = "15:30";
-
-        SimpleDateFormat displayFormat = new SimpleDateFormat("HH:mm");
-        displayFormat.format("10:30 PM");
-        boolean x = currentTime.equals(timeToCompare);
     }
 
     private void getData() {
@@ -97,6 +79,7 @@ public class DatesActivity extends AppCompatActivity implements Listeners.BackLi
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 binding.progBar.setVisibility(View.GONE);
+                datesModelList.clear();
                 if (dataSnapshot.getValue() != null) {
 
                     for (DataSnapshot ds:dataSnapshot.getChildren())
@@ -131,16 +114,5 @@ public class DatesActivity extends AppCompatActivity implements Listeners.BackLi
         finish();
     }
 
-    private void addNotification() {
-      if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
-          CharSequence name="notfy";
-          String desc="desccccc";
-          int imprtance=NotificationManager.IMPORTANCE_DEFAULT;
-          NotificationChannel channel=new NotificationChannel("notify",name,imprtance);
-          channel.setDescription(desc);
-          NotificationManager manager=getSystemService(NotificationManager.class);
-          manager.createNotificationChannel(channel);
-      }
-    }
 
 }

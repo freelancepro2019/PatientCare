@@ -8,16 +8,18 @@ public class DatesModel implements Serializable {
     private String time;
     private String details;
     private String create_at;
+    private long time_stamp;
 
     public DatesModel() {
     }
 
-    public DatesModel(String id, String drugName , String time, String details, String create_at) {
+    public DatesModel(String id, String drugName, String time, String details, String create_at, long time_stamp) {
         this.id = id;
         this.drugName = drugName;
         this.time = time;
         this.details = details;
         this.create_at = create_at;
+        this.time_stamp = time_stamp;
     }
 
     public String getId() {
@@ -62,5 +64,11 @@ public class DatesModel implements Serializable {
         this.create_at = create_at;
     }
 
+    public long getTime_stamp() {
+        return time_stamp;
+    }
 
+    public void setTime_stamp(long time_stamp) {
+        this.time_stamp = time_stamp;
+    }
 }
