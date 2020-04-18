@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.developer.patientcare.models.UserModel;
+import com.developer.patientcare.tags.Tags;
 import com.google.gson.Gson;
 
 public class Preferences {
@@ -43,6 +44,7 @@ public class Preferences {
         Gson gson = new Gson();
         String userDataGson = gson.toJson(userModel);
         editor.putString("user_data",userDataGson);
+        createSession(context, Tags.session_login);
         editor.apply();
     }
 
@@ -51,6 +53,7 @@ public class Preferences {
         SharedPreferences preferences = context.getSharedPreferences("userPref",Context.MODE_PRIVATE);
         String userDataGson = preferences.getString("user_data","");
         return new Gson().fromJson(userDataGson,UserModel.class);
+
     }
 
     public void createSession(Context context,String session)
